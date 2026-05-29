@@ -1,0 +1,22 @@
+elero_cover_tilt.yaml
+  s_e18b614a31631e::t_b3ddf1e32a399e 6-8,10-12,19-21
+  s_e18b614a31631e::t_b081bafe907593 73-77
+  s_e18b614a31631e::t_f7cf271830c385 2
+  s_e18b614a31631e::t_36b80d56e1209e 36-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "cce92fe3cf1e7387b371aac204d4f99b2a628238",
+  "prompts": {},
+  "sessions": {
+    "s_e18b614a31631e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1f5eb6cc-ccfe-442e-8dba-594f3dbc0425",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Maciej Kucharek <maciej@slateteams.com>"
+    }
+  }
+}
