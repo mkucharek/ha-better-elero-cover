@@ -1,32 +1,33 @@
 blueprint:
-  name: "Elero Cover Tilt v1.0.5"
+  name: "Elero Cover Tilt v1.1.0"
   description: >
-    Tilts a venetian / horizontal blind by briefly reversing the motor.
+    Tilts a venetian / horizontal blind to a percentage by timing the motor.
 
-    Runs close -> wait-for-closed -> open -> wait -> stop. The motor closes
-    the slats to a known end position, then opens for a short time to set the
-    tilt angle, then stops.
+    Runs close -> wait -> (open -> wait) -> stop. The motor first drives closed
+    for a fixed time to reach a known 0% baseline, then opens for a time
+    proportional to the requested tilt percentage, then stops.
 
-    - Close duration: max time to reach closed. If the cover reports a real
-      "closed" state, the open step starts the instant it's closed; otherwise
-      this acts as a fixed drive-closed delay.
-    - Open duration: how long to drive open afterwards. This sets the final
-      tilt angle (longer = more open slats).
+    - Close duration: fixed time to drive fully closed (the 0% baseline). Must
+      be long enough to reach the closed end stop from any starting position.
+    - Open duration: open time that corresponds to 100% tilt. The actual open
+      time is open_duration * tilt_pct / 100.
+    - Tilt %: runtime parameter (0-100). Passed per call, e.g. from a template
+      cover's set_cover_tilt_position. At 0% the blind just closes.
 
-    Works with any cover entity, but built for Elero motors that expose only
-    open/close/stop (no native tilt position).
+    Open-loop: there is no position feedback, so accuracy depends on consistent
+    motor speed and a close_duration that reliably reaches the end stop.
 
-    v1.0.5: Bind cover_entity to a variable so the wait_template resolves
-    (fixes "'cover_entity' is undefined").
-    v1.0.4: Rename input close_duration -> close_duration_timeout
-    (existing instances must re-set the value).
-    v1.0.3: Default close duration raised to 120s (it is now a safety timeout
-    that should comfortably cover full travel, not a precise drive time).
-    v1.0.2: Wait for the cover to report "closed" before opening, with close
-    duration as a safety timeout (degrades to a fixed delay if there is no
-    position feedback).
-    v1.0.1: Bind inputs to variables so the delay templates resolve
-    (fixes "'close_duration' is undefined").
+    Built for Elero motors driven through hubs (e.g. Fibaro/Yubii) that expose
+    only open/close/stop with no usable tilt.
+
+    v1.1.0: Add percentage tilt via a runtime tilt_pct field; open time scales
+    from open_duration (=100%). Drop the wait-for-closed step (hub reports no
+    reliable closed state); close_duration is a fixed delay again.
+    v1.0.5: Bind cover_entity to a variable so the wait_template resolves.
+    v1.0.4: Rename input close_duration -> close_duration_timeout.
+    v1.0.3: Default close duration raised to 120s.
+    v1.0.2: Wait for the cover to report "closed" before opening.
+    v1.0.1: Bind inputs to variables so the delay templates resolve.
   domain: script
   input:
     cover_entity:
@@ -36,26 +37,25 @@ blueprint:
         entity:
           filter:
             - domain: cover
-    close_duration_timeout:
+    close_duration:
       name: Close Duration (seconds)
       description: >
-        Max time to wait for the cover to reach closed before opening. If the
-        entity has no real closed feedback, this is a fixed drive-closed delay,
-        so make it long enough to reach the end stop from any position.
-      default: 120
+        Fixed time to drive fully closed before opening (the 0% baseline).
+        Long enough to reach the closed end stop from any position.
+      default: 2
       selector:
         number:
-          min: 1
-          max: 300
-          step: 1
+          min: 0.1
+          max: 30
+          step: 0.1
           unit_of_measurement: s
           mode: box
     open_duration:
-      name: Open Duration (seconds)
+      name: Open Duration at 100% (seconds)
       description: >
-        How long to drive open after closing. Sets the final tilt angle
-        (longer = more open slats).
-      default: 3
+        Open time corresponding to 100% tilt. Actual open time scales with the
+        requested tilt percentage.
+      default: 5
       selector:
         number:
           min: 0.1
@@ -68,25 +68,39 @@ mode: single
 max_exceeded: silent
 icon: mdi:blinds-horizontal
 
+fields:
+  tilt_pct:
+    name: Tilt %
+    description: Target tilt (0 = closed, 100 = open_duration of opening).
+    default: 100
+    selector:
+      number:
+        min: 0
+        max: 100
+        step: 1
+        unit_of_measurement: "%"
+        mode: slider
+
 variables:
-  cover_entity: !input cover_entity
-  close_duration_timeout: !input close_duration_timeout
+  close_duration: !input close_duration
   open_duration: !input open_duration
 
 sequence:
   - action: cover.close_cover
     target:
       entity_id: !input cover_entity
-  # Block until the cover reports closed; fall back to close_duration_timeout
-  # as a safety timeout for motors with no position feedback.
-  - wait_template: "{{ is_state(cover_entity, 'closed') }}"
-    timeout: "{{ close_duration_timeout | float }}"
-    continue_on_timeout: true
-  - action: cover.open_cover
-    target:
-      entity_id: !input cover_entity
   - delay:
-      milliseconds: "{{ (open_duration | float * 1000) | int }}"
+      milliseconds: "{{ (close_duration | float * 1000) | int }}"
+  - if:
+      - condition: template
+        value_template: "{{ (tilt_pct | float(0)) > 0 }}"
+    then:
+      - action: cover.open_cover
+        target:
+          entity_id: !input cover_entity
+      - delay:
+          milliseconds: >
+            {{ (open_duration | float * (tilt_pct | float(0)) / 100 * 1000) | int }}
   - action: cover.stop_cover
     target:
       entity_id: !input cover_entity
