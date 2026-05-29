@@ -1,5 +1,5 @@
 blueprint:
-  name: "Elero Cover Tilt v1.0.4"
+  name: "Elero Cover Tilt v1.0.5"
   description: >
     Tilts a venetian / horizontal blind by briefly reversing the motor.
 
@@ -16,6 +16,8 @@ blueprint:
     Works with any cover entity, but built for Elero motors that expose only
     open/close/stop (no native tilt position).
 
+    v1.0.5: Bind cover_entity to a variable so the wait_template resolves
+    (fixes "'cover_entity' is undefined").
     v1.0.4: Rename input close_duration -> close_duration_timeout
     (existing instances must re-set the value).
     v1.0.3: Default close duration raised to 120s (it is now a safety timeout
@@ -67,6 +69,7 @@ max_exceeded: silent
 icon: mdi:blinds-horizontal
 
 variables:
+  cover_entity: !input cover_entity
   close_duration_timeout: !input close_duration_timeout
   open_duration: !input open_duration
 
