@@ -1,5 +1,5 @@
 blueprint:
-  name: "Elero Cover Tilt v1.0.3"
+  name: "Elero Cover Tilt v1.0.4"
   description: >
     Tilts a venetian / horizontal blind by briefly reversing the motor.
 
@@ -16,6 +16,8 @@ blueprint:
     Works with any cover entity, but built for Elero motors that expose only
     open/close/stop (no native tilt position).
 
+    v1.0.4: Rename input close_duration -> close_duration_timeout
+    (existing instances must re-set the value).
     v1.0.3: Default close duration raised to 120s (it is now a safety timeout
     that should comfortably cover full travel, not a precise drive time).
     v1.0.2: Wait for the cover to report "closed" before opening, with close
@@ -32,7 +34,7 @@ blueprint:
         entity:
           filter:
             - domain: cover
-    close_duration:
+    close_duration_timeout:
       name: Close Duration (seconds)
       description: >
         Max time to wait for the cover to reach closed before opening. If the
@@ -65,17 +67,17 @@ max_exceeded: silent
 icon: mdi:blinds-horizontal
 
 variables:
-  close_duration: !input close_duration
+  close_duration_timeout: !input close_duration_timeout
   open_duration: !input open_duration
 
 sequence:
   - action: cover.close_cover
     target:
       entity_id: !input cover_entity
-  # Block until the cover reports closed; fall back to close_duration as a
-  # safety timeout for motors with no position feedback.
+  # Block until the cover reports closed; fall back to close_duration_timeout
+  # as a safety timeout for motors with no position feedback.
   - wait_template: "{{ is_state(cover_entity, 'closed') }}"
-    timeout: "{{ close_duration | float }}"
+    timeout: "{{ close_duration_timeout | float }}"
     continue_on_timeout: true
   - action: cover.open_cover
     target:
