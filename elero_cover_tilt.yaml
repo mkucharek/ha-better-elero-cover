@@ -1,20 +1,24 @@
 blueprint:
-  name: "Elero Cover Tilt v1.0.1"
+  name: "Elero Cover Tilt v1.0.2"
   description: >
     Tilts a venetian / horizontal blind by briefly reversing the motor.
 
-    Runs close -> wait -> open -> wait -> stop. The motor closes the slats
-    to a known end position, then opens for a short time to set the tilt
-    angle, then stops. The two delays control the result:
+    Runs close -> wait-for-closed -> open -> wait -> stop. The motor closes
+    the slats to a known end position, then opens for a short time to set the
+    tilt angle, then stops.
 
-    - Close duration: how long to drive closed before reversing. Long enough
-      to reach the fully-closed end stop from any starting position.
+    - Close duration: max time to reach closed. If the cover reports a real
+      "closed" state, the open step starts the instant it's closed; otherwise
+      this acts as a fixed drive-closed delay.
     - Open duration: how long to drive open afterwards. This sets the final
       tilt angle (longer = more open slats).
 
     Works with any cover entity, but built for Elero motors that expose only
     open/close/stop (no native tilt position).
 
+    v1.0.2: Wait for the cover to report "closed" before opening, with close
+    duration as a safety timeout (degrades to a fixed delay if there is no
+    position feedback).
     v1.0.1: Bind inputs to variables so the delay templates resolve
     (fixes "'close_duration' is undefined").
   domain: script
@@ -29,8 +33,9 @@ blueprint:
     close_duration:
       name: Close Duration (seconds)
       description: >
-        How long to drive the cover closed before reversing. Must be long
-        enough to reach the fully-closed end stop from any position.
+        Max time to wait for the cover to reach closed before opening. If the
+        entity has no real closed feedback, this is a fixed drive-closed delay,
+        so make it long enough to reach the end stop from any position.
       default: 2
       selector:
         number:
@@ -65,8 +70,11 @@ sequence:
   - action: cover.close_cover
     target:
       entity_id: !input cover_entity
-  - delay:
-      milliseconds: "{{ (close_duration | float * 1000) | int }}"
+  # Block until the cover reports closed; fall back to close_duration as a
+  # safety timeout for motors with no position feedback.
+  - wait_template: "{{ is_state(cover_entity, 'closed') }}"
+    timeout: "{{ close_duration | float }}"
+    continue_on_timeout: true
   - action: cover.open_cover
     target:
       entity_id: !input cover_entity
