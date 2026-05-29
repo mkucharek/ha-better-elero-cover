@@ -1,0 +1,19 @@
+elero_cover_tilt.yaml
+  s_e18b614a31631e::t_c9d52b19d4221b 2,4,6-8,10-15,17-18,20-30,40,43-45,48-50,54,56-58,71-83,85,93-103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "17200e7c6ad0f728ab4b474154befbab4a2ae3b2",
+  "prompts": {},
+  "sessions": {
+    "s_e18b614a31631e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1f5eb6cc-ccfe-442e-8dba-594f3dbc0425",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Maciej Kucharek <maciej@slateteams.com>"
+    }
+  }
+}
