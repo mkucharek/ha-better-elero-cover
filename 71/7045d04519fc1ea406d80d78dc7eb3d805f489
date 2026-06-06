@@ -1,0 +1,34 @@
+CLAUDE.md
+  s_b51e9217b3088f::t_720ea137503a95 10-16
+  s_e18b614a31631e::t_987dc4d61b83ec 23-24,26-38
+  s_b51e9217b3088f::t_130f3c681453dd 61-67
+  s_e18b614a31631e::t_a1270acbb16364 25
+README.md
+  s_b51e9217b3088f::t_546abed46ad6e6 1-110
+LICENSE
+  s_b51e9217b3088f::t_bc02ba40e11b6d 1-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "717045d04519fc1ea406d80d78dc7eb3d805f489",
+  "prompts": {},
+  "sessions": {
+    "s_b51e9217b3088f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d3a3bf6c-dac2-4bb5-b9da-4e439d4c05db",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Maciej Kucharek <maciej@slateteams.com>"
+    },
+    "s_e18b614a31631e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1f5eb6cc-ccfe-442e-8dba-594f3dbc0425",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Maciej Kucharek <maciej@slateteams.com>"
+    }
+  }
+}
