@@ -1,0 +1,76 @@
+# Template covers that wrap Elero covers to add a real tilt control.
+#
+# Why: the hub (Fibaro/Yubii) exposes the blind as a plain cover with no tilt —
+# its tilt buttons just do a full open/close. You can't intercept a service call
+# on the real entity, so instead you WRAP it in a Template Cover that:
+#   - delegates open / close / stop to the real cover, and
+#   - hijacks set_cover_tilt_position to call your per-cover tilt script
+#     (the script created from the elero_cover_tilt blueprint).
+# Put the wrapper entity on your dashboards instead of the raw cover.
+#
+# Naming used below (replace with your own):
+#   cover.living_room_blind          - the real Elero cover (wrapped)
+#   script.living_room_blind_tilt    - script created from the blueprint
+#   cover.living_room_blind_tilt     - this wrapper (unique_id + "_tilt")
+#
+# Add this under your existing `template:` block in configuration.yaml (or
+# include it as its own file). Reload via Dev Tools -> YAML -> Template entities
+# (no restart needed for the modern `template:` integration).
+
+template:
+  - cover:
+      - unique_id: living_room_blind_tilt
+        name: Living Room Blind
+        device_class: blind
+
+        # Mirror the real cover. The hub reports no tilt position, so a
+        # partially-tilted blind reads as "unknown" — show it as "open"
+        # instead. "unavailable" passes through untouched.
+        state: >
+          {% set s = states('cover.living_room_blind') %}
+          {{ 'open' if s == 'unknown' else s }}
+
+        # No real position feedback exists, so let the slider optimistically
+        # remember the last requested tilt angle.
+        tilt_optimistic: true
+
+        open_cover:
+          action: cover.open_cover
+          target: { entity_id: cover.living_room_blind }
+        close_cover:
+          action: cover.close_cover
+          target: { entity_id: cover.living_room_blind }
+        stop_cover:
+          action: cover.stop_cover
+          target: { entity_id: cover.living_room_blind }
+
+        # Defining this advertises SET_TILT_POSITION, so HA renders a tilt
+        # slider (and the up/down tilt buttons). The slider's 0-100 value is
+        # passed straight into the blueprint script as `tilt_pct`.
+        set_cover_tilt_position:
+          action: script.living_room_blind_tilt
+          data:
+            tilt_pct: "{{ tilt }}"
+
+      # Repeat the block per blind — one wrapper + one blueprint script each:
+      #
+      # - unique_id: bedroom_blind_tilt
+      #   name: Bedroom Blind
+      #   device_class: blind
+      #   state: >
+      #     {% set s = states('cover.bedroom_blind') %}
+      #     {{ 'open' if s == 'unknown' else s }}
+      #   tilt_optimistic: true
+      #   open_cover:
+      #     action: cover.open_cover
+      #     target: { entity_id: cover.bedroom_blind }
+      #   close_cover:
+      #     action: cover.close_cover
+      #     target: { entity_id: cover.bedroom_blind }
+      #   stop_cover:
+      #     action: cover.stop_cover
+      #     target: { entity_id: cover.bedroom_blind }
+      #   set_cover_tilt_position:
+      #     action: script.bedroom_blind_tilt
+      #     data:
+      #       tilt_pct: "{{ tilt }}"

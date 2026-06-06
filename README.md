@@ -62,30 +62,41 @@ data:
 
 ### As a tilt slider (template cover)
 
-Wrap the script in a [template cover](https://www.home-assistant.io/integrations/cover.template/)
-so the blind exposes a real tilt control in the UI and to automations:
+The hub's own tilt buttons just do a full open/close, and you can't intercept a
+service call on the real entity. So wrap it in a
+[template cover](https://www.home-assistant.io/integrations/template/#cover)
+that delegates open/close/stop to the real cover and routes
+`set_cover_tilt_position` to your blueprint script — then put the wrapper on
+your dashboards. The slider's 0–100 value flows straight into `tilt_pct`:
 
 ```yaml
-cover:
-  - platform: template
-    covers:
-      living_room_blind:
-        friendly_name: "Living Room Blind"
-        value_template: "{{ states('cover.living_room') }}"
+template:
+  - cover:
+      - unique_id: living_room_blind_tilt
+        name: Living Room Blind
+        device_class: blind
+        state: >
+          {% set s = states('cover.living_room_blind') %}
+          {{ 'open' if s == 'unknown' else s }}
+        tilt_optimistic: true
         open_cover:
-          - action: cover.open_cover
-            target: { entity_id: cover.living_room }
+          action: cover.open_cover
+          target: { entity_id: cover.living_room_blind }
         close_cover:
-          - action: cover.close_cover
-            target: { entity_id: cover.living_room }
+          action: cover.close_cover
+          target: { entity_id: cover.living_room_blind }
         stop_cover:
-          - action: cover.stop_cover
-            target: { entity_id: cover.living_room }
+          action: cover.stop_cover
+          target: { entity_id: cover.living_room_blind }
         set_cover_tilt_position:
-          - action: script.elero_blind_tilt   # your script's entity_id
-            data:
-              tilt_pct: "{{ tilt }}"
+          action: script.living_room_blind_tilt   # your blueprint script
+          data:
+            tilt_pct: "{{ tilt }}"
 ```
+
+A fuller, commented version (with notes on the `unknown → open` state mapping
+and adding more blinds) lives in
+[`examples/template-covers.yaml`](examples/template-covers.yaml).
 
 ## Tuning
 
