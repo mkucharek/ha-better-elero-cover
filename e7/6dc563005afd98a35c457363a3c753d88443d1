@@ -1,0 +1,23 @@
+CLAUDE.md
+  s_b51e9217b3088f::t_82dff8559b419b 16-17
+examples/template-covers.yaml
+  s_b51e9217b3088f::t_8394f4eb7ac6d0 1-76
+README.md
+  s_b51e9217b3088f::t_64d8505059627e 65-70,73-81,83-84,86-87,89-90,92-94,97-99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "e76dc563005afd98a35c457363a3c753d88443d1",
+  "prompts": {},
+  "sessions": {
+    "s_b51e9217b3088f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d3a3bf6c-dac2-4bb5-b9da-4e439d4c05db",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Maciej Kucharek <maciej@slateteams.com>"
+    }
+  }
+}
