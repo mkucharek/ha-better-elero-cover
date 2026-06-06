@@ -115,6 +115,9 @@ The two durations are the only knobs:
   dropped, so presses can't fight the motor mid-sequence.
 - Every close-then-open cycle moves the slats fully closed first, so tilt changes
   are not instantaneous.
+- Defining `set_cover_tilt_position` makes HA show a tilt **slider and** tilt
+  buttons — there's no YAML-only way to have one without the other. See
+  [`docs/notes.md`](docs/notes.md) for this and other design rationale.
 
 ## License
 

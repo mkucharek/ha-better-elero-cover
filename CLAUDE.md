@@ -15,6 +15,8 @@ as a public GitHub repository.
 - `README.md` — user-facing docs and the Home Assistant import button
 - `examples/template-covers.yaml` — genericized template-cover wrapper that
   adds a tilt slider by routing `set_cover_tilt_position` to the script
+- `docs/notes.md` — design rationale and HA gotchas (why wrap the cover, the
+  `set_cover_tilt_position` slider+buttons behavior, state mapping)
 - `CLAUDE.md` — this file
 
 ## How the Blueprint Works
